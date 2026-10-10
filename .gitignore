@@ -135,3 +135,6 @@ docker-compose.override.yml
 # Claude Code (local settings)
 # =============================================================================
 .claude/settings.local.json
+
+# Frontend build copied into the backend for local runs
+backend/static/
