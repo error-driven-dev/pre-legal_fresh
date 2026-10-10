@@ -22,6 +22,9 @@ backend/   FastAPI + SQLAlchemy + SQLite, a uv project (Python 3.13)
                          /app/backend/static in Docker) as static files at "/"
   app/config.py          settings (env vars prefixed PRELEGAL_)
   app/db.py              engine, Base, get_session, reset_database()
+  app/features/chat/     POST /api/chat: AI assistant that fills the NDA fields (OpenRouter,
+                         structured output). llm.py = HTTP client, service.py = prompt + parsing
+                         (+1 retry), router.py = endpoint. Stateless: client sends whole chat.
   app/features/<name>/   one folder per feature: router.py, models.py, schemas, service
                          users/ is the table only; sign-up/sign-in endpoints are not built yet
                          (they need password hashing and routes under /api/auth)
@@ -29,8 +32,10 @@ backend/   FastAPI + SQLAlchemy + SQLite, a uv project (Python 3.13)
 frontend/  Next.js (static export, output: "export") + TypeScript strict
   src/api/schema.d.ts    GENERATED from the backend OpenAPI schema. Never edit by hand.
   src/api/client.ts      typed fetch client; use it for every backend call
-  src/lib/               pure logic with unit tests (nda.ts builds the document, pdf.ts renders it)
-  src/components/        UI
+  src/lib/               pure logic with unit tests (nda.ts builds the document, pdf.ts renders it,
+                         chat.ts merges AI-returned fields into the document, ignoring invalid ones)
+  src/components/        UI. NdaCreator holds the state and a Chat/Form toggle (default Chat);
+                         ChatPanel, NdaForm and NdaPreview are the pieces
 scripts/   start/stop/check scripts. Dockerfile + compose.yaml at the repo root.
 ```
 
@@ -45,6 +50,9 @@ scripts/   start/stop/check scripts. Dockerfile + compose.yaml at the repo root.
 - Frontend: no `any`; brand colors come from the CSS variables in `src/app/globals.css`
   (accent #BAFF39, primary #209dd7, navy #032147, muted #6E6E6E).
 - Backend: full type hints (mypy strict), pydantic models for every request/response.
+- AI: calls go through OpenRouter from the backend only. Model is `PRELEGAL_MODEL` (default
+  `nvidia/nemotron-3-super-120b-a12b:free`; `openrouter/free` was less reliable at following the
+  schema). Free models are flaky, so always validate model output (see `chat.ts`, `service.py`).
 - Secrets live in `.env` (gitignored, passed to the container). Never print or commit them.
 - Keep files small and single-purpose; prefer adding a new file over growing a large one.
 - Next.js here is a newer version than most training data: see `frontend/AGENTS.md`.

@@ -1,0 +1,75 @@
+.chat {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.messages p {
+  margin: 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  max-width: 90%;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.assistant {
+  align-self: flex-start;
+  background: #eef3f8;
+  color: var(--color-navy);
+}
+
+.user {
+  align-self: flex-end;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.messages .error {
+  align-self: stretch;
+  max-width: none;
+  background: #fdecea;
+  color: #8a1c13;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  padding: 12px 24px;
+  border-top: 1px solid #ddd;
+}
+
+.composer input {
+  flex: 1;
+  font: inherit;
+  padding: 8px 10px;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+}
+
+.composer button {
+  font: inherit;
+  font-weight: 600;
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+}
+
+.composer button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

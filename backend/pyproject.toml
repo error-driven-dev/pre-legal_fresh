@@ -5,13 +5,19 @@ description = "Prelegal V1 backend (FastAPI + SQLite)"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi>=0.140",
+    "httpx>=0.28.1",
     "pydantic-settings>=2",
     "sqlalchemy>=2",
     "uvicorn[standard]>=0.30",
 ]
 
 [dependency-groups]
-dev = ["httpx", "mypy", "pytest", "ruff"]
+dev = [
+    "mypy",
+    "pytest",
+    "pytest-asyncio>=1.4.0",
+    "ruff",
+]
 
 [tool.uv]
 package = false
@@ -29,3 +35,4 @@ strict = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+asyncio_mode = "auto"

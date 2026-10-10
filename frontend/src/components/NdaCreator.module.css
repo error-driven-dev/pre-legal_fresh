@@ -4,18 +4,67 @@
   height: 100vh;
 }
 
-.form {
-  overflow-y: auto;
-  padding: 24px;
+.side {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border-right: 1px solid #ddd;
+}
+
+.sideHeader {
+  padding: 16px 24px 12px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sideHeader h1 {
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.toggle button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 6px 18px;
+  border: 0;
+  background: #fff;
+  color: var(--color-primary);
+  cursor: pointer;
+}
+
+.toggle .toggleOn {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.form {
+  padding: 24px;
   display: flex;
   flex-direction: column;
   gap: 14px;
-}
-
-.form h1 {
-  font-size: 1.4rem;
-  margin: 0;
 }
 
 .field {
@@ -55,7 +104,7 @@
 }
 
 .download {
-  padding: 10px;
+  padding: 8px 18px;
   font: inherit;
   font-weight: 600;
   border: 0;
@@ -63,8 +112,13 @@
   background: var(--color-primary);
   color: #fff;
   cursor: pointer;
-  position: sticky;
-  bottom: 0;
+}
+
+.previewBar {
+  max-width: 780px;
+  margin: 0 auto 12px;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .preview {

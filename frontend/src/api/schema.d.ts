@@ -21,16 +21,115 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/chat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Chat */
+        post: operations["chat_api_chat_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ChatMessage */
+        ChatMessage: {
+            /**
+             * Role
+             * @enum {string}
+             */
+            role: "user" | "assistant";
+            /** Content */
+            content: string;
+        };
+        /** ChatRequest */
+        ChatRequest: {
+            /** Messages */
+            messages: components["schemas"]["ChatMessage"][];
+            document: components["schemas"]["NdaFieldsUpdate"];
+        };
+        /**
+         * ChatResponse
+         * @description Also the structured output the model must produce.
+         */
+        ChatResponse: {
+            /** Reply */
+            reply: string;
+            fields: components["schemas"]["NdaFieldsUpdate"];
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
         /** HealthResponse */
         HealthResponse: {
             /** Status */
             status: string;
             /** Database */
             database: string;
+        };
+        /**
+         * NdaFieldsUpdate
+         * @description Mutual NDA cover page fields. Every field is optional: absent means "unchanged".
+         */
+        NdaFieldsUpdate: {
+            /** Purpose */
+            purpose?: string | null;
+            /** Effectivedate */
+            effectiveDate?: string | null;
+            /** Termtype */
+            termType?: ("expires" | "continues") | null;
+            /** Termyears */
+            termYears?: number | null;
+            /** Confidentialitytype */
+            confidentialityType?: ("years" | "perpetuity") | null;
+            /** Confidentialityyears */
+            confidentialityYears?: number | null;
+            /** Governinglaw */
+            governingLaw?: string | null;
+            /** Jurisdiction */
+            jurisdiction?: string | null;
+            /** Modifications */
+            modifications?: string | null;
+            party1?: components["schemas"]["PartyUpdate"] | null;
+            party2?: components["schemas"]["PartyUpdate"] | null;
+        };
+        /** PartyUpdate */
+        PartyUpdate: {
+            /** Name */
+            name?: string | null;
+            /** Title */
+            title?: string | null;
+            /** Company */
+            company?: string | null;
+            /** Noticeaddress */
+            noticeAddress?: string | null;
+            /** Date */
+            date?: string | null;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -57,6 +156,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    chat_api_chat_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
