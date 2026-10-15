@@ -24,8 +24,17 @@ export type Run = { text: string; bold?: boolean };
 export type Block =
   | { type: "title" | "h2" | "h3" | "note"; runs: Run[] }
   | { type: "p"; runs: Run[] }
+  | { type: "clause"; indent: number; runs: Run[] }
   | { type: "option"; runs: Run[]; checked: boolean }
-  | { type: "table"; head: string[]; rows: string[][] };
+  | {
+      type: "table";
+      head: string[];
+      rows: string[][];
+      /** Column widths as fractions of the page width (must sum to 1). */
+      widths: number[];
+      /** Minimum height, in text lines, of the first body row (room to sign). */
+      firstRowLines?: number;
+    };
 
 const emptyParty: Party = { name: "", title: "", company: "", noticeAddress: "", date: "" };
 
@@ -121,6 +130,8 @@ export function buildDocument(d: NdaData, standardTermsMd: string): Block[] {
     {
       type: "table",
       head: ["", "PARTY 1", "PARTY 2"],
+      widths: [0.28, 0.36, 0.36],
+      firstRowLines: 3,
       rows: [
         ["Signature", "", ""],
         ["Print Name", d.party1.name, d.party2.name],

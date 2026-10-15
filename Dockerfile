@@ -14,6 +14,9 @@ WORKDIR /app/backend
 COPY backend/pyproject.toml backend/uv.lock ./
 RUN uv sync --frozen --no-dev
 COPY backend/app ./app
+# The backend parses these at runtime (document catalog and templates).
+COPY catalog.json /app/catalog.json
+COPY templates/ /app/templates/
 COPY --from=frontend /app/frontend/out ./static
 ENV PRELEGAL_DATABASE_PATH=/tmp/prelegal.db \
     PRELEGAL_STATIC_DIR=/app/backend/static

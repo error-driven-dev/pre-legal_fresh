@@ -1,7 +1,7 @@
 "use client";
 
 import type { NdaData, Party } from "@/lib/nda";
-import styles from "./NdaCreator.module.css";
+import styles from "./DocumentCreator.module.css";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (

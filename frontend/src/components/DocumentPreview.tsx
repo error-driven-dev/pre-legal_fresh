@@ -1,5 +1,5 @@
 import type { Block, Run } from "@/lib/nda";
-import styles from "./NdaCreator.module.css";
+import styles from "./DocumentCreator.module.css";
 
 const renderRuns = (runs: Run[]) =>
   runs.map((r, i) => (r.bold ? <strong key={i}>{r.text}</strong> : <span key={i}>{r.text}</span>));
@@ -15,6 +15,12 @@ function renderBlock(b: Block, i: number) {
     case "note":
       return (
         <p key={i} className={styles.note}>
+          {renderRuns(b.runs)}
+        </p>
+      );
+    case "clause":
+      return (
+        <p key={i} style={{ paddingLeft: b.indent * 20 }}>
           {renderRuns(b.runs)}
         </p>
       );
@@ -50,11 +56,24 @@ function renderBlock(b: Block, i: number) {
   }
 }
 
-export default function NdaPreview({ blocks, onDownload }: { blocks: Block[]; onDownload: () => void }) {
+export default function DocumentPreview({
+  blocks,
+  canDownload,
+  onDownload,
+}: {
+  blocks: Block[];
+  canDownload: boolean;
+  onDownload: () => void;
+}) {
   return (
     <section className={styles.preview} aria-label="Document preview">
       <div className={styles.previewBar}>
-        <button type="button" className={styles.download} onClick={onDownload}>
+        <button
+          type="button"
+          className={styles.download}
+          disabled={!canDownload}
+          onClick={onDownload}
+        >
           Download PDF
         </button>
       </div>

@@ -9,6 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.db import reset_database
 from app.features.chat.router import router as chat_router
+from app.features.documents.router import router as documents_router
 from app.features.health.router import router as health_router
 
 
@@ -21,6 +22,7 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
 def create_app() -> FastAPI:
     app = FastAPI(title="Prelegal", lifespan=lifespan)
     app.include_router(health_router)
+    app.include_router(documents_router)
     app.include_router(chat_router)
     # Mounted last so /api routes win over the catch-all static files.
     if settings.static_dir.is_dir():

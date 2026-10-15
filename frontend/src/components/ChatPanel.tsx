@@ -2,16 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/api/client";
-import { type NdaFieldsUpdate, toFieldsPayload } from "@/lib/chat";
+import type { components } from "@/api/schema";
+import { toFieldsPayload } from "@/lib/chat";
+import type { Values } from "@/lib/generic";
 import type { NdaData } from "@/lib/nda";
 import styles from "./ChatPanel.module.css";
 
+export type ChatResult = components["schemas"]["ChatResponse"];
 type Message = { role: "user" | "assistant"; content: string };
 
 const GREETING: Message = {
   role: "assistant",
   content:
-    "Hi! I'll help you draft a Mutual NDA. Who are the two parties, and what will you be sharing confidential information for?",
+    "Hi! I can help you draft a legal agreement. What kind of document do you need?",
 };
 
 function errorText(error: unknown): string {
@@ -22,11 +25,15 @@ function errorText(error: unknown): string {
 }
 
 export default function ChatPanel({
-  document,
-  onFields,
+  documentId,
+  nda,
+  values,
+  onResult,
 }: {
-  document: NdaData;
-  onFields: (update: NdaFieldsUpdate) => void;
+  documentId: string | null;
+  nda: NdaData;
+  values: Values;
+  onResult: (result: ChatResult) => void;
 }) {
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [input, setInput] = useState("");
@@ -50,11 +57,11 @@ export default function ChatPanel({
     setBusy(true);
     try {
       const { data, error: apiError } = await api.POST("/api/chat", {
-        body: { messages: next, document: toFieldsPayload(document) },
+        body: { messages: next, documentId, document: toFieldsPayload(nda), values },
       });
       if (data) {
         setMessages([...next, { role: "assistant", content: data.reply }]);
-        onFields(data.fields);
+        onResult(data);
       } else {
         setError(errorText(apiError));
       }

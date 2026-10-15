@@ -1,8 +1,8 @@
-"""Request/response models for the NDA chat. JSON uses camelCase to match the frontend."""
+"""Request/response models for the document chat. JSON uses camelCase to match the frontend."""
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydantic.alias_generators import to_camel
 
 
@@ -41,11 +41,15 @@ class ChatMessage(CamelModel):
 
 class ChatRequest(CamelModel):
     messages: list[ChatMessage]
-    document: NdaFieldsUpdate  # the fields as they currently stand in the document
+    document_id: str | None = None  # the document being drafted; null until one is chosen
+    document: NdaFieldsUpdate = Field(default_factory=NdaFieldsUpdate)  # current NDA fields
+    values: dict[str, str | None] = Field(default_factory=dict)  # current key-term values
 
 
 class ChatResponse(CamelModel):
     """Also the structured output the model must produce."""
 
     reply: str
-    fields: NdaFieldsUpdate
+    document_id: str | None = None  # set when the user has chosen (or switched) a document
+    fields: NdaFieldsUpdate = Field(default_factory=NdaFieldsUpdate)  # NDA updates
+    values: dict[str, str | None] = Field(default_factory=dict)  # key-term updates by field key

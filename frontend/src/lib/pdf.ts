@@ -66,18 +66,23 @@ export function buildPdf(blocks: Block[]): jsPDF {
         drawRuns(b.runs, 10);
         y += 6;
         break;
+      case "clause":
+        drawRuns(b.runs, 10, b.indent * 18);
+        y += 4;
+        break;
       case "option":
         drawRuns([{ text: b.checked ? "[x]  " : "[  ]  " }, ...b.runs], 10, 8);
         y += 2;
         break;
       case "table": {
-        const cols = [width * 0.28, width * 0.36, width * 0.36];
+        const cols = b.widths.map((w) => width * w);
         const lineH = 10 * LINE;
         for (const [i, row] of [b.head, ...b.rows].entries()) {
           doc.setFontSize(10);
           doc.setFont("helvetica", i === 0 ? "bold" : "normal");
           const cells = row.map((c, ci) => doc.splitTextToSize(c, cols[ci] - 8) as string[]);
-          const rowH = Math.max(1, ...cells.map((c) => c.length), i === 1 ? 3 : 1) * lineH + 8;
+          const minLines = i === 1 ? (b.firstRowLines ?? 1) : 1;
+          const rowH = Math.max(minLines, ...cells.map((c) => c.length)) * lineH + 8;
           ensure(rowH);
           let x = MARGIN;
           cells.forEach((lines, ci) => {

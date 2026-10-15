@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # `npm run build` output; the Docker image overrides it (see Dockerfile).
     static_dir: Path = BACKEND_DIR.parent / "frontend" / "out"
 
+    # Document templates and the catalog describing them (repo root; copied into the image).
+    templates_dir: Path = BACKEND_DIR.parent / "templates"
+    catalog_path: Path = BACKEND_DIR.parent / "catalog.json"
+
     # OpenRouter. The key is read from the unprefixed OPENROUTER_API_KEY (.env) and never
     # leaves the server. Default is a free open-weights model that followed the structured output
     # schema reliably in testing. `openrouter/free` (random free model) was less consistent.

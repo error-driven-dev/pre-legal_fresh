@@ -76,6 +76,7 @@
 
 .field input,
 .field textarea,
+.field select,
 .years {
   font: inherit;
   padding: 6px 8px;
@@ -191,4 +192,15 @@
     grid-template-columns: 1fr;
     height: auto;
   }
+}
+
+.empty {
+  padding: 24px;
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+}
+
+.download:disabled {
+  opacity: 0.5;
+  cursor: default;
 }

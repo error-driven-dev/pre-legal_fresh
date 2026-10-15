@@ -9,11 +9,12 @@ from app.config import settings
 from app.features.chat.llm import LlmError, OpenRouterClient
 from app.features.chat.router import get_llm_client
 from app.features.chat.schemas import ChatRequest
-from app.features.chat.service import build_messages, run_turn
+from app.features.chat.service import build_messages, build_system_prompt, run_turn
 
 GOOD = json.dumps(
     {
         "reply": "Got it. What is the purpose?",
+        "documentId": "mutual-nda",
         "fields": {"governingLaw": "Delaware", "party1": {"company": "Acme"}},
     }
 )
@@ -36,7 +37,11 @@ class FakeClient:
 
 def make_request(text: str = "Acme and Beta, Delaware law") -> ChatRequest:
     return ChatRequest.model_validate(
-        {"messages": [{"role": "user", "content": text}], "document": {"purpose": "Testing"}}
+        {
+            "messages": [{"role": "user", "content": text}],
+            "documentId": "mutual-nda",
+            "document": {"purpose": "Testing"},
+        }
     )
 
 
@@ -81,12 +86,82 @@ def test_build_messages_sends_whole_conversation_and_current_document() -> None:
                 {"role": "assistant", "content": "And the other party?"},
                 {"role": "user", "content": "Beta"},
             ],
+            "documentId": "mutual-nda",
             "document": {"governingLaw": "Texas"},
         }
     )
     messages = build_messages(request)
     assert [m["role"] for m in messages] == ["system", "assistant", "user", "assistant", "user"]
     assert '"governingLaw": "Texas"' in messages[0]["content"]
+
+
+def request_for(document_id: str | None, **extra: Any) -> ChatRequest:
+    return ChatRequest.model_validate(
+        {
+            "messages": [{"role": "user", "content": "hi"}],
+            "documentId": document_id,
+            **extra,
+        }
+    )
+
+
+def test_prompt_without_document_lists_catalog_and_handles_unsupported_requests() -> None:
+    prompt = build_system_prompt(request_for(None))
+    assert 'id "csa"' in prompt and 'id "mutual-nda"' in prompt
+    assert "cannot generate" in prompt and "closest document" in prompt
+
+
+def test_prompt_for_generic_document_lists_fields_and_current_values() -> None:
+    prompt = build_system_prompt(request_for("sla", values={"Provider": "Acme"}))
+    assert "Target Uptime" in prompt and "Support Channel" in prompt
+    assert '"Provider": "Acme"' in prompt
+    assert '"Target Uptime": null' in prompt  # unfilled fields are shown as null
+
+
+def answer(**parts: Any) -> str:
+    return json.dumps({"reply": "ok", **parts})
+
+
+async def test_selecting_a_document_returns_its_id() -> None:
+    result = await run_turn(FakeClient(answer(documentId="csa")), request_for(None))
+    assert result.document_id == "csa"
+
+
+async def test_unsupported_request_keeps_document_unset() -> None:
+    reply = "We can't generate a lease. The closest is the Cloud Service Agreement."
+    raw = json.dumps({"reply": reply, "documentId": None})
+    result = await run_turn(FakeClient(raw), request_for(None))
+    assert result.document_id is None and "closest" in result.reply
+
+
+async def test_unknown_document_id_from_model_is_dropped() -> None:
+    result = await run_turn(FakeClient(answer(documentId="lease-agreement")), request_for(None))
+    assert result.document_id is None
+
+
+async def test_generic_values_are_filtered_to_known_nonblank_fields() -> None:
+    raw = answer(values={"Provider": " Acme ", "Customer": "  ", "Made Up": "x", "Term": None})
+    result = await run_turn(FakeClient(raw), request_for("csa"))
+    assert result.values == {"Provider": "Acme"}
+
+
+async def test_nda_fields_are_dropped_for_generic_documents() -> None:
+    raw = answer(fields={"governingLaw": "Delaware"}, values={"Governing Law": "Delaware"})
+    result = await run_turn(FakeClient(raw), request_for("csa"))
+    assert result.fields.governing_law is None
+    assert result.values == {"Governing Law": "Delaware"}
+
+
+async def test_values_are_dropped_for_the_nda() -> None:
+    raw = answer(fields={"governingLaw": "Delaware"}, values={"Provider": "Acme"})
+    result = await run_turn(FakeClient(raw), request_for("mutual-nda"))
+    assert result.fields.governing_law == "Delaware" and result.values == {}
+
+
+async def test_switching_documents_applies_updates_to_the_new_document() -> None:
+    raw = answer(documentId="sla", values={"Target Uptime": "99.9%"})
+    result = await run_turn(FakeClient(raw), request_for("mutual-nda"))
+    assert result.document_id == "sla" and result.values == {"Target Uptime": "99.9%"}
 
 
 def override(client: TestClient, fake: FakeClient) -> None:

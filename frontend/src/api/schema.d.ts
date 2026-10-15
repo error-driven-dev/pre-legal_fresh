@@ -21,6 +21,43 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/documents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Documents */
+        get: operations["list_documents_api_documents_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/documents/{doc_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Document
+         * @description Fields and clauses of a generic document. The NDA has its own dedicated flow.
+         */
+        get: operations["get_document_api_documents__doc_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/chat": {
         parameters: {
             query?: never;
@@ -56,7 +93,13 @@ export interface components {
         ChatRequest: {
             /** Messages */
             messages: components["schemas"]["ChatMessage"][];
-            document: components["schemas"]["NdaFieldsUpdate"];
+            /** Documentid */
+            documentId?: string | null;
+            document?: components["schemas"]["NdaFieldsUpdate"];
+            /** Values */
+            values?: {
+                [key: string]: string | null;
+            };
         };
         /**
          * ChatResponse
@@ -65,7 +108,79 @@ export interface components {
         ChatResponse: {
             /** Reply */
             reply: string;
-            fields: components["schemas"]["NdaFieldsUpdate"];
+            /** Documentid */
+            documentId?: string | null;
+            fields?: components["schemas"]["NdaFieldsUpdate"];
+            /** Values */
+            values?: {
+                [key: string]: string | null;
+            };
+        };
+        /**
+         * DocBlock
+         * @description One line of a template. `heading` is a top-level section, `clause` a numbered clause.
+         */
+        DocBlock: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "title" | "heading" | "clause";
+            /**
+             * Indent
+             * @default 0
+             */
+            indent: number;
+            /** Runs */
+            runs: components["schemas"]["Run"][];
+        };
+        /** DocumentDetail */
+        DocumentDetail: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "nda" | "generic";
+            /** Fields */
+            fields: components["schemas"]["FieldInfo"][];
+            /** Blocks */
+            blocks: components["schemas"]["DocBlock"][];
+        };
+        /** DocumentSummary */
+        DocumentSummary: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            /** Description */
+            description: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "nda" | "generic";
+        };
+        /**
+         * FieldInfo
+         * @description A value the user supplies: a named term the template refers to (e.g. "Provider").
+         */
+        FieldInfo: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /** Hint */
+            hint: string;
+            /** Context */
+            context: string;
+            /** Group */
+            group: string;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -118,6 +233,16 @@ export interface components {
             /** Date */
             date?: string | null;
         };
+        /** Run */
+        Run: {
+            /** Text */
+            text: string;
+            /**
+             * Bold
+             * @default false
+             */
+            bold: boolean;
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -156,6 +281,57 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    list_documents_api_documents_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentSummary"][];
+                };
+            };
+        };
+    };
+    get_document_api_documents__doc_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                doc_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DocumentDetail"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
